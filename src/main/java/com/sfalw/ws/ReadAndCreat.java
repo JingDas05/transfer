@@ -28,9 +28,9 @@ public class ReadAndCreat {
 
     private static String es_host = "172.18.12.125";
     private static int es_port = 9300;
-    private String index = "writ_stick";
-    private String type = "fycase";
-    private static Client client;
+    public static String index = "writ_stick";
+    public static String type = "fycase";
+    public static Client client;
 
     static {
         client = new TransportClient()
