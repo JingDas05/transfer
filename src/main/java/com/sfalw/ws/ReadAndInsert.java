@@ -21,7 +21,7 @@ import java.util.Iterator;
 public class ReadAndInsert {
 
     public static void main(String[] args) {
-
+        bulkUpdate();
     }
 
     public static void bulkUpdate() {
@@ -32,26 +32,32 @@ public class ReadAndInsert {
         RegexFileFilter filter = new RegexFileFilter("^(.*?)");
         Iterator<File> fileIterator = FileUtils.iterateFiles(parentFile, filter, DirectoryFileFilter.DIRECTORY);
         int bound = 150;
-        int currentBound = 0;
-        boolean isSuccess = true;
-        while (fileIterator.hasNext() && isSuccess) {
+        int currentBound = 1;
+        boolean isContinue = true;
+        boolean hasNext = true;
+        BulkResponse bulkResponse;
+        while (isContinue) {
+            hasNext = fileIterator.hasNext();
             try {
                 jsonData = Files.readAllBytes(Paths.get(fileIterator.next().getAbsolutePath()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (currentBound++ <= bound) {
+            if (currentBound <= bound) {
                 bulkRequestBuilder.add(ReadAndCreat.client
                         .prepareIndex(ReadAndCreat.index, ReadAndCreat.type)
                         .setSource(jsonData));
+                currentBound++;
+                isContinue = hasNext;
             } else {
-                BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
+                bulkResponse = bulkRequestBuilder.execute().actionGet();
                 // 复位
-                isSuccess = !bulkResponse.hasFailures();
-                currentBound = 0;
+                isContinue = !bulkResponse.hasFailures() && hasNext;
+                currentBound = 1;
                 bulkRequestBuilder = ReadAndCreat.client.prepareBulk();
             }
         }
     }
 }
+
 
