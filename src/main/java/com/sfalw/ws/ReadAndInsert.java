@@ -31,7 +31,7 @@ public class ReadAndInsert {
     public void bulkUpdate() {
         byte[] jsonData = new byte[0];
         BulkRequestBuilder bulkRequestBuilder = ReadAndCreate.client.prepareBulk();
-        // 依次读取json, 累计100
+        // 依次读取json, 累计150
         File parentFile = new File("../data");
         RegexFileFilter filter = new RegexFileFilter("^(.*?)");
         Iterator<File> fileIterator = FileUtils.iterateFiles(parentFile, filter, DirectoryFileFilter.DIRECTORY);

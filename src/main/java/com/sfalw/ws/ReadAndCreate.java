@@ -73,7 +73,8 @@ public class ReadAndCreate {
                 .setTypes(type)
                 .setQuery(queryBuilder)
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setFrom(10)
+                .setScroll(new TimeValue(60 * 1000))
+                .setFrom(0)
                 .setSize(10);
         searchResponse = searchRequestBuilder.execute()
                 .actionGet();
@@ -108,7 +109,7 @@ public class ReadAndCreate {
             // 开始写入文件
             for (SearchHit searchHit : searchHits) {
                 try {
-                    Files.write(Paths.get(searchHit.getId() + ".json"),
+                    Files.write(Paths.get("../data/" + searchHit.getId() + ".json"),
                             searchHit.source(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (IOException e) {
                     e.printStackTrace();
