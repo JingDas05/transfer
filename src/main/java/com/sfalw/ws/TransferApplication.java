@@ -24,7 +24,7 @@ public class TransferApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        readAndCreate.readAndCreate();
-        readAndInsert.bulkUpdate();
+        readAndCreate.readAndCreate();
+//        readAndInsert.bulkUpdate();
     }
 }
