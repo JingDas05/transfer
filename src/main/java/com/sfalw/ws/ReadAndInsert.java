@@ -35,7 +35,7 @@ public class ReadAndInsert {
         byte[] jsonData = new byte[0];
         BulkRequestBuilder bulkRequestBuilder = ReadAndCreate.client.prepareBulk();
         // 依次读取json, 累计150
-        File parentFile = new File("../data");
+        File parentFile = new File("../sjbd");
         RegexFileFilter filter = new RegexFileFilter("^(.*?)");
         Iterator<File> fileIterator = FileUtils.iterateFiles(parentFile, filter, DirectoryFileFilter.DIRECTORY);
         int bound = 150;
@@ -68,11 +68,12 @@ public class ReadAndInsert {
                         .setId(StringUtils.split(eachFile.getName(), ".")[0])
                         .setSource(jsonData));
                 currentBound++;
+                logger.info("导入中150+");
             }
         }
         bulkResponse = bulkRequestBuilder.execute().actionGet();
         logger.info("es导入结束");
-        logger.info("最后一次导入任务是否成功"+ !bulkResponse.hasFailures());
+        logger.info("最后一次导入任务是否成功" + !bulkResponse.hasFailures());
         Date endTime = new Date();
         logger.info("耗时" + (endTime.getTime() - beginTime.getTime()) / 1000 + "秒");
     }

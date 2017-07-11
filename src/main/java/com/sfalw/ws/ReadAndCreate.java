@@ -40,7 +40,10 @@ public class ReadAndCreate {
 
     Logger logger = LoggerFactory.getLogger(ReadAndCreate.class);
 
+    //外网配置
     private static String es_host = "10.23.12.17";
+    //内网配置
+//    private static String es_host = "172.16.0.13";
     private static int es_port = 9301;
     public static String index = "writ_stick";
     public static String type = "fycase";
@@ -48,10 +51,14 @@ public class ReadAndCreate {
     public static final int EACH_FILE_SIZE = 350000;
     public static String fileFolderName = "../data";
     public static long beginFileFolderNum = 0;
+    //外网配置
+    public static String clusterName = "sfalw2.0";
+    //内网配置
+//    public static String clusterName = "sfalw-new";
 
     static {
         Settings settings = ImmutableSettings.settingsBuilder()
-                .put("cluster.name", "sfalw2.0").build();
+                .put("cluster.name", clusterName).build();
         try {
             client = new TransportClient(settings)
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(es_host), es_port));
@@ -73,7 +80,7 @@ public class ReadAndCreate {
         RangeQueryBuilder queryBuilder;
         SearchResponse searchResponse;
         // 从es批量查询
-        queryBuilder = new RangeQueryBuilder("createTime")
+        queryBuilder = new RangeQueryBuilder("_timestamp")
                 .from(new DateTime("2017-05-01T00:00:00").getMillis())
                 .to(new Date().getTime());
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
