@@ -5,6 +5,11 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,15 +23,14 @@ import java.util.Iterator;
  * @author wusi
  * @version 2017/7/10 16:57
  */
+@Service
 public class ReadAndInsert {
 
-    public static void main(String[] args) {
-        bulkUpdate();
-    }
+    Logger logger = LoggerFactory.getLogger(ReadAndInsert.class);
 
-    public static void bulkUpdate() {
+    public void bulkUpdate() {
         byte[] jsonData = new byte[0];
-        BulkRequestBuilder bulkRequestBuilder = ReadAndCreat.client.prepareBulk();
+        BulkRequestBuilder bulkRequestBuilder = ReadAndCreate.client.prepareBulk();
         // 依次读取json, 累计100
         File parentFile = new File("../data");
         RegexFileFilter filter = new RegexFileFilter("^(.*?)");
@@ -34,29 +38,32 @@ public class ReadAndInsert {
         int bound = 150;
         int currentBound = 1;
         boolean isContinue = true;
-        boolean hasNext = true;
         BulkResponse bulkResponse;
-        while (isContinue) {
-            hasNext = fileIterator.hasNext();
+        File eachFile;
+        while (fileIterator.hasNext() && isContinue) {
+            eachFile = fileIterator.next();
             try {
-                jsonData = Files.readAllBytes(Paths.get(fileIterator.next().getAbsolutePath()));
+                jsonData = Files.readAllBytes(Paths.get(eachFile.getAbsolutePath()));
             } catch (IOException e) {
                 e.printStackTrace();
+                isContinue = false;
             }
             if (currentBound <= bound) {
-                bulkRequestBuilder.add(ReadAndCreat.client
-                        .prepareIndex(ReadAndCreat.index, ReadAndCreat.type)
+                bulkRequestBuilder.add(ReadAndCreate.client
+                        .prepareIndex(ReadAndCreate.index, ReadAndCreate.type)
+                        .setId(StringUtils.split(eachFile.getName(), ".")[0])
                         .setSource(jsonData));
                 currentBound++;
-                isContinue = hasNext;
             } else {
                 bulkResponse = bulkRequestBuilder.execute().actionGet();
                 // 复位
-                isContinue = !bulkResponse.hasFailures() && hasNext;
+                isContinue = !bulkResponse.hasFailures();
                 currentBound = 1;
-                bulkRequestBuilder = ReadAndCreat.client.prepareBulk();
+                bulkRequestBuilder = ReadAndCreate.client.prepareBulk();
             }
         }
+        bulkResponse = bulkRequestBuilder.execute().actionGet();
+        Assert.state(!bulkResponse.hasFailures(), "插入成功");
     }
 }
 
