@@ -14,9 +14,11 @@ import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -39,8 +41,10 @@ public class ReadAndCreate {
 
     private static String es_host = "172.18.12.125";
     private static int es_port = 9300;
-    public static String index = "writ_stick";
-    public static String type = "fycase";
+    //    public static String index = "writ_stick";
+    public static String index = "writ_stick1";
+    //    public static String type = "fycase";
+    public static String type = "fycase1";
     public static Client client;
 
     static {
@@ -56,26 +60,27 @@ public class ReadAndCreate {
 
     public void readAndCreate() {
         logger.info("es开始导出");
-        MatchAllQueryBuilder queryBuilder;
+        Date beginTime = new Date();
+        RangeQueryBuilder queryBuilder;
         SearchResponse searchResponse;
         // 从es批量查询
-//        RangeQueryBuilder queryBuilder = new RangeQueryBuilder("createTime")
-//                .from(new DateTime("2015-05-01T00:00:00").getMillis())
-//                .to(new Date().getTime());
-//        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
-//                .setTypes(type)
-//                .setQuery(queryBuilder)
-//                .setSize(10)
-//                .setScroll(new TimeValue(60 * 1000))
-//                .setSearchType(SearchType.QUERY_THEN_FETCH);
-        queryBuilder = new MatchAllQueryBuilder();
+        queryBuilder = new RangeQueryBuilder("createTime")
+                .from(new DateTime("2017-05-01T00:00:00").getMillis())
+                .to(new Date().getTime());
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
                 .setTypes(type)
                 .setQuery(queryBuilder)
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setSize(10)
                 .setScroll(new TimeValue(60 * 1000))
-                .setFrom(0)
-                .setSize(10);
+                .setSearchType(SearchType.QUERY_THEN_FETCH);
+//        queryBuilder = new MatchAllQueryBuilder();
+//        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
+//                .setTypes(type)
+//                .setQuery(queryBuilder)
+//                .setSearchType(SearchType.QUERY_THEN_FETCH)
+//                .setScroll(new TimeValue(60 * 1000))
+//                .setSize(10)
+//                .addSort("id", SortOrder.DESC);
         searchResponse = searchRequestBuilder.execute()
                 .actionGet();
         // 获取第一次数据
@@ -101,6 +106,9 @@ public class ReadAndCreate {
         alreadyStore = alreadyStore + currentResultNum;
         SearchHits searchHits;
         while (alreadyStore < total) {
+            if (StringUtils.isEmpty(scrollId)) {
+                return;
+            }
             searchResponse = client.prepareSearchScroll(scrollId)
                     .setScroll(new TimeValue(60 * 1000))
                     .execute().actionGet();
@@ -117,5 +125,8 @@ public class ReadAndCreate {
             }
             alreadyStore = alreadyStore + searchHits.getHits().length;
         }
+        logger.info("es导出结束");
+        Date endTime = new Date();
+        logger.info("耗时" + (endTime.getTime() - beginTime.getTime()) / 1000 + "秒");
     }
 }

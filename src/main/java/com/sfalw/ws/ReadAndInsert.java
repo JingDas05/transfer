@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -29,6 +30,8 @@ public class ReadAndInsert {
     Logger logger = LoggerFactory.getLogger(ReadAndInsert.class);
 
     public void bulkUpdate() {
+        logger.info("es开始导入");
+        Date beginTime = new Date();
         byte[] jsonData = new byte[0];
         BulkRequestBuilder bulkRequestBuilder = ReadAndCreate.client.prepareBulk();
         // 依次读取json, 累计150
@@ -60,10 +63,18 @@ public class ReadAndInsert {
                 isContinue = !bulkResponse.hasFailures();
                 currentBound = 1;
                 bulkRequestBuilder = ReadAndCreate.client.prepareBulk();
+                bulkRequestBuilder.add(ReadAndCreate.client
+                        .prepareIndex(ReadAndCreate.index, ReadAndCreate.type)
+                        .setId(StringUtils.split(eachFile.getName(), ".")[0])
+                        .setSource(jsonData));
+                currentBound++;
             }
         }
         bulkResponse = bulkRequestBuilder.execute().actionGet();
-        Assert.state(!bulkResponse.hasFailures(), "插入成功");
+        logger.info("es导入结束");
+        logger.info("最后一次导入任务是否成功"+ !bulkResponse.hasFailures());
+        Date endTime = new Date();
+        logger.info("耗时" + (endTime.getTime() - beginTime.getTime()) / 1000 + "秒");
     }
 }
 
