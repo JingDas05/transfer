@@ -46,7 +46,9 @@ public class ReadAndCreate {
 //    private static String es_host = "172.16.0.13";
     private static int es_port = 9301;
     public static String index = "writ_stick";
+//    public static String index = "case_index";
     public static String type = "fycase";
+//    public static String type = "case_type";
     public static Client client;
     public static final int EACH_FILE_SIZE = 350000;
     public static String fileFolderName = "../data";
@@ -79,7 +81,7 @@ public class ReadAndCreate {
         Date beginTime = new Date();
         RangeQueryBuilder queryBuilder;
         SearchResponse searchResponse;
-        // 从es批量查询
+        // 从es批量查询, 文书是 _timestamp
         queryBuilder = new RangeQueryBuilder("_timestamp")
                 .from(new DateTime("2017-05-01T00:00:00").getMillis())
                 .to(new Date().getTime());
@@ -96,7 +98,7 @@ public class ReadAndCreate {
 //                .setSearchType(SearchType.QUERY_THEN_FETCH)
 //                .setScroll(new TimeValue(60 * 1000))
 //                .setSize(10)
-//                .addSort("id", SortOrder.DESC);
+//                .addSort("ajId", SortOrder.DESC);
         searchResponse = searchRequestBuilder.execute()
                 .actionGet();
         // 获取第一次数据
