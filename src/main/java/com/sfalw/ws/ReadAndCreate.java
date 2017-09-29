@@ -45,10 +45,12 @@ public class ReadAndCreate {
     //内网配置
 //    private static String es_host = "172.16.0.13";
     private static int es_port = 9301;
-    public static String index = "writ_stick";
+//    public static String index = "writ_stick";
 //    public static String index = "case_index";
-    public static String type = "fycase";
+    public static String index = "news";
+//    public static String type = "fycase";
 //    public static String type = "case_type";
+    public static String type = "contenttype";
     public static Client client;
     public static final int EACH_FILE_SIZE = 350000;
     public static String fileFolderName = "../data";
@@ -79,26 +81,26 @@ public class ReadAndCreate {
     public void readAndCreate() {
         logger.info("es开始导出");
         Date beginTime = new Date();
-        RangeQueryBuilder queryBuilder;
+        MatchAllQueryBuilder queryBuilder;
         SearchResponse searchResponse;
         // 从es批量查询, 文书是 _timestamp
-        queryBuilder = new RangeQueryBuilder("_timestamp")
-                .from(new DateTime("2017-05-01T00:00:00").getMillis())
-                .to(new Date().getTime());
-        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
-                .setTypes(type)
-                .setQuery(queryBuilder)
-                .setSize(10)
-                .setScroll(new TimeValue(60 * 1000))
-                .setSearchType(SearchType.QUERY_THEN_FETCH);
-//        queryBuilder = new MatchAllQueryBuilder();
+//        queryBuilder = new RangeQueryBuilder("_timestamp")
+//                .from(new DateTime("2017-07-31T14:00:00").getMillis())
+//                .to(new Date().getTime());
 //        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
 //                .setTypes(type)
 //                .setQuery(queryBuilder)
-//                .setSearchType(SearchType.QUERY_THEN_FETCH)
-//                .setScroll(new TimeValue(60 * 1000))
 //                .setSize(10)
-//                .addSort("ajId", SortOrder.DESC);
+//                .setScroll(new TimeValue(60 * 1000))
+//                .setSearchType(SearchType.QUERY_THEN_FETCH);
+        queryBuilder = new MatchAllQueryBuilder();
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index)
+                .setTypes(type)
+                .setQuery(queryBuilder)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setScroll(new TimeValue(60 * 1000))
+                .setSize(10)
+                .addSort("id", SortOrder.DESC);
         searchResponse = searchRequestBuilder.execute()
                 .actionGet();
         // 获取第一次数据

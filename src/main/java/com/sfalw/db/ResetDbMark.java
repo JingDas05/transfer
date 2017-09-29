@@ -15,11 +15,17 @@ public class ResetDbMark {
     private static JdbcTemplate jdbcTemplate;
 
     static {
+//        dataSource = new DriverManagerDataSource();
+//        dataSource.setDriverClassName("org.postgresql.Driver");
+//        dataSource.setUrl("jdbc:postgresql://172.18.12.118:5432/sfal2");
+//        dataSource.setUsername("thunisoft");
+//        dataSource.setPassword("123456");
+
         dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://172.18.12.118:5432/sfal2");
-        dataSource.setUsername("thunisoft");
-        dataSource.setPassword("123456");
+        dataSource.setUrl("jdbc:postgresql://172.18.7.38:5432/sfal2");
+        dataSource.setUsername("sa");
+        dataSource.setPassword("tusc@6789#JKL");
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
